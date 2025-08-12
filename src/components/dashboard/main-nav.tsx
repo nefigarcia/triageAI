@@ -12,7 +12,7 @@ import {
 
 const menuItems = [
   { href: "/dashboard", label: "Inbox", icon: Inbox },
-  { href: "#", label: "Analytics", icon: BarChart },
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart },
   { href: "#", label: "Teams", icon: Users },
   { href: "#", label: "Settings", icon: Settings },
 ]
@@ -27,7 +27,7 @@ export function MainNav() {
           <Link href={item.href} passHref legacyBehavior>
             <SidebarMenuButton
               asChild
-              isActive={pathname.startsWith(item.href) && item.href !== '#'}
+              isActive={pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/dashboard')}
               tooltip={item.label}
             >
               <a>
