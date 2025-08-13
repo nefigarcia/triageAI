@@ -7,7 +7,6 @@ import { analyzeTicketIntent } from "@/ai/flows/analyze-ticket-intent"
 import { automaticallyRouteTicket } from "@/ai/flows/automatically-route-ticket"
 import { suggestResponse } from "@/ai/flows/suggest-response"
 import prisma from "@/lib/db"
-import { users, teams } from "@/lib/data" // still using mock data for assignment
 
 const newTicketSchema = z.object({
   subject: z.string().min(1, "Subject is required."),
@@ -42,10 +41,9 @@ export async function createTicketAction(formData: FormData) {
     // this would come from the authenticated user's session.
     const companyId = "comp-acme"
 
-    // Mock assignment based on routing decision for now
-    const assignedTo = users.find(u => u.id === routingDecision.assignedAgent);
-    const assignedTeam = teams.find(t => t.id === routingDecision.assignedTeam);
-
+    // Find agent and team from the database
+    const assignedTo = await prisma.user.findFirst({ where: { name: routingDecision.assignedAgent, companyId: companyId } });
+    const assignedTeam = await prisma.team.findFirst({ where: { name: routingDecision.assignedTeam, companyId: companyId } });
 
     const newTicket = await prisma.ticket.create({
         data: {
@@ -84,6 +82,9 @@ export async function createTicketAction(formData: FormData) {
                     }
                 ]
             }
+        },
+        include: {
+            logs: true,
         }
     })
 

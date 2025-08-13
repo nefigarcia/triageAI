@@ -29,14 +29,14 @@ interface TicketTableProps {
   tickets: Ticket[]
 }
 
-const statusVariantMap: { [key in Ticket["status"]]: "default" | "secondary" | "destructive" | "outline" } = {
+const statusVariantMap: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
   open: "default",
   in_progress: "secondary",
   closed: "outline",
   escalated: "destructive",
 }
 
-const urgencyVariantMap: { [key in Ticket["urgency"]]: "default" | "secondary" | "destructive" } = {
+const urgencyVariantMap: { [key: string]: "default" | "secondary" | "destructive" } = {
   low: "secondary",
   medium: "default",
   high: "destructive",
@@ -77,7 +77,7 @@ export function TicketTable({ tickets }: TicketTableProps) {
               <TableRow key={ticket.id}>
                 <TableCell>
                   <Link href={`/dashboard/tickets/${ticket.id}`} className="font-medium text-primary hover:underline">
-                    {ticket.id}
+                    {ticket.id.substring(0, 8)}...
                   </Link>
                 </TableCell>
                 <TableCell>

@@ -1,49 +1,20 @@
-"use client"
 
-import { Canvas, useFrame } from "@react-three/fiber"
-import { useRef, useState } from "react"
-import type { Mesh } from "three"
-import { OrbitControls, Sphere, Torus } from "@react-three/drei"
+'use client'
+
 import Link from "next/link"
+import dynamic from 'next/dynamic'
 import { Button } from "@/components/ui/button"
 
-function AnimatedScene() {
-  const torusRef = useRef<Mesh>(null!)
-  const sphereRef = useRef<Mesh>(null!)
-
-  useFrame((_state, delta) => {
-    if (torusRef.current) {
-      torusRef.current.rotation.x += delta * 0.2
-      torusRef.current.rotation.y += delta * 0.1
-    }
-    if (sphereRef.current) {
-        sphereRef.current.rotation.y += delta * 0.3
-    }
-  })
-
-  return (
-    <>
-      <ambientLight intensity={1.5} />
-      <directionalLight position={[5, 5, 5]} intensity={2} />
-        <Torus ref={torusRef} args={[2.5, 0.1, 16, 100]} >
-             <meshStandardMaterial color="#90CAF9" wireframe />
-        </Torus>
-      <Sphere ref={sphereRef} args={[1, 32, 32]}>
-        <meshStandardMaterial color="#FFB74D" wireframe />
-      </Sphere>
-      <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.5} />
-    </>
-  )
-}
-
+const AnimatedScene = dynamic(() => import('@/components/animated-scene').then(mod => mod.AnimatedScene), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-gray-900" />
+})
 
 export default function Home() {
   return (
     <div className="relative w-full h-screen bg-gray-900 text-white">
       <div className="absolute inset-0 z-0">
-         <Canvas>
-            <AnimatedScene />
-        </Canvas>
+         <AnimatedScene />
       </div>
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-orange-300">

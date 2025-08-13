@@ -1,17 +1,30 @@
-import { companies } from "@/lib/data"
+import prisma from "@/lib/db"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Hand, Users, Zap } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 
-export default function AnalyticsPage() {
+export default async function AnalyticsPage() {
   // For now, we'll just show the first company's data.
   // In a real app, you'd get this based on the logged-in user.
-  const company = companies[0]
+  const company = await prisma.company.findFirst({
+    where: { id: "comp-acme" },
+    include: { plan: true, _count: { select: { users: true } } },
+  })
+
+  if (!company) {
+    return <p>Company not found.</p>
+  }
+  
   const plan = company.plan
-  const usage = company.usage
+  // In a real app, this would be calculated based on actual usage tracking
+  const usage = {
+    tasks: await prisma.ticketLog.count({ where: { ticket: { companyId: company.id } } }),
+    agents: company._count.users,
+  }
+
 
   const tasksConsumedPercentage =
-    plan.tasks !== "unlimited" ? (usage.tasks / plan.tasks) * 100 : 0
+    plan.tasks > 0 ? (usage.tasks / plan.tasks) * 100 : 0
   const agentsConsumedPercentage = (usage.agents / plan.agents) * 100
 
   return (
@@ -35,13 +48,9 @@ export default function AnalyticsPage() {
           <CardContent>
             <div className="text-2xl font-bold">{usage.tasks.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              {plan.tasks !== "unlimited"
-                ? `out of ${plan.tasks.toLocaleString()} for your plan`
-                : "Unlimited tasks"}
+              out of {plan.tasks.toLocaleString()} for your plan
             </p>
-            {plan.tasks !== "unlimited" && (
-              <Progress value={tasksConsumedPercentage} className="mt-2 h-2" />
-            )}
+            <Progress value={tasksConsumedPercentage} className="mt-2 h-2" />
           </CardContent>
         </Card>
         <Card>
@@ -63,7 +72,7 @@ export default function AnalyticsPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">{company._count.users}</div>
             <p className="text-xs text-muted-foreground">
               users invited to the platform
             </p>

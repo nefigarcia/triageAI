@@ -1,12 +1,15 @@
-import { tickets } from "@/lib/data"
+import prisma from "@/lib/db"
 import { TicketTable } from "@/components/dashboard/ticket-table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-export default function DashboardPage() {
-  const allTickets = tickets;
-  const openTickets = tickets.filter(t => t.status === 'open' || t.status === 'in_progress');
-  const escalatedTickets = tickets.filter(t => t.status === 'escalated');
-  const closedTickets = tickets.filter(t => t.status === 'closed');
+export default async function DashboardPage() {
+  const allTickets = await prisma.ticket.findMany({
+    include: { assignedTo: true, team: true },
+    orderBy: { createdAt: 'desc' }
+  });
+  const openTickets = allTickets.filter(t => t.status === 'open' || t.status === 'in_progress');
+  const escalatedTickets = allTickets.filter(t => t.status === 'escalated');
+  const closedTickets = allTickets.filter(t => t.status === 'closed');
 
   return (
     <div className="space-y-6">

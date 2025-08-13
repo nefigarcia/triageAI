@@ -2,22 +2,29 @@ import { notFound } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
-import { tickets, users, teams } from "@/lib/data"
+import prisma from "@/lib/db"
 import { Separator } from "@/components/ui/separator"
 import { TicketDetailsCard } from "@/components/dashboard/ticket-details-card"
 import { TicketLogs } from "@/components/dashboard/ticket-logs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SuggestReply } from "@/components/dashboard/suggest-reply"
 
-export default function TicketDetailPage({ params }: { params: { id: string } }) {
-  const ticket = tickets.find((t) => t.id === params.id)
+export default async function TicketDetailPage({ params }: { params: { id: string } }) {
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: params.id },
+    include: {
+      logs: { orderBy: { timestamp: 'asc' } },
+      assignedTo: true,
+      team: true,
+    }
+  })
 
   if (!ticket) {
     notFound()
   }
   
-  const companyUsers = users.filter(u => u.companyId === ticket.companyId);
-  const companyTeams = teams.filter(t => t.companyId === ticket.companyId);
+  const companyUsers = await prisma.user.findMany({ where: { companyId: ticket.companyId }});
+  const companyTeams = await prisma.team.findMany({ where: { companyId: ticket.companyId }});
 
   const ticketContentForReply = `Customer: ${ticket.customerName} (${ticket.customerEmail})\nSubject: ${ticket.subject}\n\n${ticket.description}`
 

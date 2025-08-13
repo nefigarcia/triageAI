@@ -1,104 +1,90 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model Company {
-  id      String   @id @default(cuid())
-  name    String
-  planId  String
-  plan    Plan     @relation(fields: [planId], references: [id])
-  users   User[]
-  teams   Team[]
-  tickets Ticket[]
-  usage   Usage?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 model Plan {
-  id        String    @id @default(cuid())
-  name      String
-  price     Float
-  tasks     Int
-  agents    Int
+  id     String @id @default(cuid())
+  name   String
+  tasks  Int
+  agents Int
+  price  Float
+
   companies Company[]
 }
 
-model Usage {
-  id        String  @id @default(cuid())
-  companyId String  @unique
-  company   Company @relation(fields: [companyId], references: [id])
-  tasks     Int
-  agents    Int
+model Company {
+  id     String @id @default(cuid())
+  name   String
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  users   User[]
+  teams   Team[]
+  tickets Ticket[]
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
+  email     String  @unique
   name      String
-  email     String   @unique
   avatarUrl String?
-  role      String
-  companyId String
-  company   Company  @relation(fields: [companyId], references: [id])
-  teamId    String?
-  team      Team?    @relation(fields: [teamId], references: [id])
-  tickets   Ticket[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id])
+
+  assignedTickets Ticket[] @relation("AssignedTickets")
 }
 
 model Team {
-  id        String   @id @default(cuid())
-  name      String
-  companyId String
-  company   Company  @relation(fields: [companyId], references: [id])
-  users     User[]
-  tickets   Ticket[]
+  id   String @id @default(cuid())
+  name String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  members User[]
+  tickets Ticket[]
 }
 
 model Ticket {
-  id            String      @id @default(cuid())
+  id            String   @id @default(cuid())
   subject       String
-  description   String
+  description   String   @db.Text
   customerName  String
   customerEmail String
   status        String
   urgency       String
   category      String
-  assignedToId  String?
-  assignedTo    User?       @relation(fields: [assignedToId], references: [id])
-  teamId        String?
-  team          Team?       @relation(fields: [teamId], references: [id])
-  companyId     String
-  company       Company     @relation(fields: [companyId], references: [id])
-  logs          TicketLog[]
+  createdAt     DateTime @default(now())
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedTickets", fields: [assignedToId], references: [id])
+
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id])
+
+  logs TicketLog[]
 }
 
 model TicketLog {
   id        String   @id @default(cuid())
   timestamp DateTime
-  actor     String
+  actor     String // e.g., 'User', 'AI'
   actorName String
   action    String
-  details   String
-  ticketId  String
-  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  details   String   @db.Text
 
-  createdAt DateTime @default(now())
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
 }

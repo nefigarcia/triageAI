@@ -62,7 +62,10 @@ export function TicketDetailsCard({ ticket, users, teams }: TicketDetailsCardPro
               <SelectItem value="Billing">Billing</SelectItem>
               <SelectItem value="Sales">Sales</SelectItem>
               <SelectItem value="General">General</SelectItem>
-              <SelectItem value={ticket.category}>{ticket.category}</SelectItem>
+              {/* This ensures that if a category is not in the list, it is still selectable */}
+              {[...new Set(["Technical", "Billing", "Sales", "General", ticket.category])].map(category => (
+                  <SelectItem key={category} value={category}>{category}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -73,6 +76,7 @@ export function TicketDetailsCard({ ticket, users, teams }: TicketDetailsCardPro
               <SelectValue placeholder="Select agent" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">Unassigned</SelectItem>
               {users.map((user) => (
                 <SelectItem key={user.id} value={user.id}>
                   {user.name}
@@ -88,6 +92,7 @@ export function TicketDetailsCard({ ticket, users, teams }: TicketDetailsCardPro
               <SelectValue placeholder="Select team" />
             </SelectTrigger>
             <SelectContent>
+               <SelectItem value="">Unassigned</SelectItem>
               {teams.map((team) => (
                 <SelectItem key={team.id} value={team.id}>
                   {team.name}
