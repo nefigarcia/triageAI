@@ -3,7 +3,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart, Inbox, Settings, Users } from "lucide-react"
+import { BarChart, Inbox, Settings, Users, Workflow } from "lucide-react"
 
 import {
   SidebarMenu,
@@ -14,6 +14,7 @@ import {
 const menuItems = [
   { href: "/dashboard", label: "Inbox", icon: Inbox },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart },
+  { href: "/dashboard/monitoring", label: "Monitoring", icon: Workflow },
   { href: "#", label: "Teams", icon: Users },
   { href: "#", label: "Settings", icon: Settings },
 ]

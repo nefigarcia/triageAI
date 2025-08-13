@@ -8,6 +8,8 @@ import { analyzeTicketIntent } from "@/ai/flows/analyze-ticket-intent"
 import { automaticallyRouteTicket } from "@/ai/flows/automatically-route-ticket"
 import { suggestResponse } from "@/ai/flows/suggest-response"
 import prisma from "@/lib/db"
+import { sendAuditEvent } from "@/services/audit"
+
 
 const newTicketSchema = z.object({
   subject: z.string().min(1, "Subject is required."),
@@ -29,8 +31,21 @@ export async function createTicketAction(formData: FormData) {
   const ticketText = `Subject: ${validation.data.subject}\n\n${validation.data.description}`
 
   try {
+    // Audit: Ticket Creation Started
+    await sendAuditEvent({
+        actor: { type: 'customer', id: validation.data.customerEmail, name: validation.data.customerName },
+        action: 'ticket_created_start',
+        details: { subject: validation.data.subject }
+    });
+
     const intentAnalysis = await analyzeTicketIntent({ ticketText })
     console.log("Intent Analysis:", intentAnalysis)
+     // Audit: AI Analysis Complete
+    await sendAuditEvent({
+        actor: { type: 'ai', name: 'TriageAI' },
+        action: 'ai_analysis_complete',
+        details: intentAnalysis
+    });
 
     const routingDecision = await automaticallyRouteTicket({
       ticketContent: ticketText,
@@ -88,6 +103,14 @@ export async function createTicketAction(formData: FormData) {
 
     console.log("New ticket created in database:", newTicket);
 
+     // Audit: Ticket Creation Finished
+    await sendAuditEvent({
+        actor: { type: 'system', name: 'TriageAI' },
+        action: 'ticket_created_finish',
+        details: { ticketId: newTicket.id, assignedAgent: assignedTo?.name, assignedTeam: assignedTeam?.name }
+    });
+
+
     revalidatePath("/dashboard")
 
     return {
@@ -96,6 +119,11 @@ export async function createTicketAction(formData: FormData) {
     }
   } catch (error) {
     console.error("AI or DB processing failed:", error)
+     await sendAuditEvent({
+        actor: { type: 'system', name: 'TriageAI' },
+        action: 'ticket_creation_failed',
+        details: { error: (error as Error).message }
+    });
     return {
       errors: {
         _form: ["Processing failed. Please try again later."],
