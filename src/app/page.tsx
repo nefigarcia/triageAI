@@ -2,13 +2,21 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { SceneWrapper } from '@/components/scene-wrapper';
+import dynamic from 'next/dynamic';
+
+const AnimatedScene = dynamic(
+  () => import('@/components/animated-scene').then((mod) => mod.AnimatedScene),
+  {
+    ssr: false,
+    loading: () => <div className="w-full h-full bg-gray-900" />,
+  }
+);
 
 export default function Home() {
   return (
     <div className="relative w-full h-screen bg-gray-900 text-white">
       <div className="absolute inset-0 z-0">
-        <SceneWrapper />
+        <AnimatedScene />
       </div>
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-orange-300">
