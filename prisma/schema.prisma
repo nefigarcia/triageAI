@@ -1,83 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-model Company {
-  id      String   @id @default(cuid())
-  name    String
-  plan    Plan     @relation(fields: [planId], references: [id])
-  planId  String
-  users   User[]
-  tickets Ticket[]
-  teams   Team[]
-}
-
 model Plan {
-  id          String    @id
+  id          String    @id @default(cuid())
   name        String
   price       String
   period      String
+  description String
+  features    Json
   tasks       Int
   agents      Int
-  features    String
   companies   Company[]
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  planId    String
+  plan      Plan     @relation(fields: [planId], references: [id])
+  users     User[]
+  teams     Team[]
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
   id        String   @id @default(cuid())
-  name      String
   email     String   @unique
+  name      String
   password  String
   avatarUrl String?
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  tickets   Ticket[]
+  teams     Team[]   @relation("TeamMembers")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  company   Company @relation(fields: [companyId], references: [id])
-  companyId String
-
-  tickets Ticket[]
 }
 
 model Team {
-  id      String @id @default(cuid())
-  name    String
-  
-  company   Company @relation(fields: [companyId], references: [id])
+  id        String   @id @default(cuid())
+  name      String
   companyId String
-
-  tickets Ticket[]
+  company   Company  @relation(fields: [companyId], references: [id])
+  members   User[]   @relation("TeamMembers")
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-
 model Ticket {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   subject       String
-  description   String   @db.Text
+  description   String
   customerName  String
   customerEmail String
   status        String
-  priority      String   @default("medium")
   urgency       String
   category      String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
   companyId     String
-  company       Company  @relation(fields: [companyId], references: [id])
-
+  company       Company   @relation(fields: [companyId], references: [id])
   assignedToId  String?
-  assignedTo    User?    @relation(fields: [assignedToId], references: [id])
-
+  assignedTo    User?     @relation(fields: [assignedToId], references: [id])
   teamId        String?
-  team          Team?    @relation(fields: [teamId], references: [id])
-
+  team          Team?     @relation(fields: [teamId], references: [id])
   logs          TicketLog[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model TicketLog {
@@ -87,7 +86,6 @@ model TicketLog {
   actorName String // "TriageAI" or User's name
   action    String
   details   String   @db.Text
-  
   ticketId  String
   ticket    Ticket   @relation(fields: [ticketId], references: [id])
 }
