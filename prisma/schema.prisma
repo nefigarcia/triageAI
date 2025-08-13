@@ -1,26 +1,20 @@
-datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
-model Plan {
-  id        String    @id @default(cuid())
-  name      String
-  price     Int?
-  tasks     Int
-  agents    Int
-  companies Company[]
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Company {
   id        String   @id @default(cuid())
   name      String
-  planId    String
   plan      Plan     @relation(fields: [planId], references: [id])
+  planId    String
   users     User[]
   teams     Team[]
   tickets   Ticket[]
@@ -28,54 +22,63 @@ model Company {
 
 model User {
   id        String   @id @default(cuid())
-  name      String
   email     String   @unique
+  name      String
   password  String
   avatarUrl String?
-  companyId String
   company   Company  @relation(fields: [companyId], references: [id])
-  teamId    String?
+  companyId String
   team      Team?    @relation(fields: [teamId], references: [id])
+  teamId    String?
   tickets   Ticket[]
 }
 
 model Team {
   id        String   @id @default(cuid())
   name      String
-  companyId String
   company   Company  @relation(fields: [companyId], references: [id])
+  companyId String
   users     User[]
   tickets   Ticket[]
 }
 
+model Plan {
+  id          String    @id
+  name        String
+  description String
+  price       Int?
+  period      String
+  tasks       Int
+  agents      Int
+  companies   Company[]
+}
+
 model Ticket {
-  id            String    @id @default(cuid())
+  id            String      @id @default(cuid())
+  createdAt     DateTime    @default(now())
   subject       String
-  description   String    @db.Text
+  description   String
   customerName  String
   customerEmail String
-  status        String    @default("open") // e.g., open, in_progress, closed, escalated
-  priority      String    @default("medium")
-  urgency       String    @default("medium")
+  status        String      // open, in_progress, closed, escalated
+  urgency       String      // low, medium, high
   category      String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  company       Company     @relation(fields: [companyId], references: [id])
   companyId     String
-  company       Company   @relation(fields: [companyId], references: [id])
+  assignedTo    User?       @relation(fields: [assignedToId], references: [id])
   assignedToId  String?
-  assignedTo    User?     @relation(fields: [assignedToId], references: [id])
+  team          Team?       @relation(fields: [teamId], references: [id])
   teamId        String?
-  team          Team?     @relation(fields: [teamId], references: [id])
   logs          TicketLog[]
 }
 
 model TicketLog {
   id        String   @id @default(cuid())
-  timestamp DateTime
-  actor     String // "AI" or "User"
+  timestamp DateTime @default(now())
+  actor     String   // "AI" or "User"
   actorName String
   action    String
-  details   String   @db.Text
+  details   String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
   ticketId  String
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 }
