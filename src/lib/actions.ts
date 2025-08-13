@@ -123,6 +123,7 @@ const signupSchema = z.object({
   name: z.string().min(1, "Your name is required."),
   email: z.string().email("Invalid email address."),
   password: z.string().min(8, "Password must be at least 8 characters."),
+  planId: z.string().min(1, "Plan selection is required."),
 })
 
 export async function signupAction(data: z.infer<typeof signupSchema>) {
@@ -138,17 +139,17 @@ export async function signupAction(data: z.infer<typeof signupSchema>) {
         const company = await prisma.company.create({
             data: {
                 name: data.companyName,
-                // The plan will be connected in the next step
-            }
-        });
-
-        await prisma.user.create({
-            data: {
-                name: data.name,
-                email: data.email,
-                // password: hashedPassword,
-                password: data.password, // Storing plaintext for simplicity
-                company: { connect: { id: company.id } },
+                plan: { connect: { id: data.planId } },
+                users: {
+                    create: [
+                        {
+                            name: data.name,
+                            email: data.email,
+                            // password: hashedPassword,
+                            password: data.password, // Storing plaintext for simplicity
+                        }
+                    ]
+                }
             }
         });
         

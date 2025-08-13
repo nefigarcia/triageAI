@@ -1,168 +1,126 @@
 "use client"
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Loader2 } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Check, Loader2 } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
-import { signupAction } from "@/lib/actions"
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
-const signupSchema = z.object({
-  companyName: z.string().min(1, "Company name is required."),
-  name: z.string().min(1, "Your name is required."),
-  email: z.string().email("Invalid email address."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-})
+const plans = [
+  {
+    id: 'plan-starter',
+    name: 'Starter',
+    price: '$49',
+    period: '/month',
+    description: 'For small teams getting started.',
+    features: ['500 tasks', '1 agent', 'Basic analytics'],
+  },
+  {
+    id: 'plan-pro',
+    name: 'Pro',
+    price: '$199',
+    period: '/month',
+    description: 'For growing teams that need more power.',
+    features: ['5,000 tasks', '5 agents', 'Team dashboard'],
+    recommended: true,
+  },
+  {
+    id: 'plan-enterprise',
+    name: 'Enterprise',
+    price: 'Custom',
+    period: '',
+    description: 'For large organizations with specific needs.',
+    features: ['Unlimited tasks', 'SLAs', 'Dedicated support'],
+  },
+];
 
-type SignupFormValues = z.infer<typeof signupSchema>
+export default function PlanSelectionPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>('plan-pro');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-export default function SignupPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { toast } = useToast()
-  const router = useRouter()
-
-  const form = useForm<SignupFormValues>({
-    resolver: zodResolver(signupSchema),
-    defaultValues: {
-      companyName: "",
-      name: "",
-      email: "",
-      password: "",
-    },
-  })
-
-  async function onSubmit(data: SignupFormValues) {
-    setIsSubmitting(true)
-    const result = await signupAction(data)
-    setIsSubmitting(false)
-
-    if (result?.errors) {
-      // Handle form-specific errors
-      Object.entries(result.errors).forEach(([key, value]) => {
-         if (key === "_form") {
-          toast({
-            variant: "destructive",
-            title: "Sign up failed",
-            description: value?.[0] ?? "An unknown error occurred.",
-          })
-         } else {
-            form.setError(key as keyof SignupFormValues, {
-                type: "server",
-                message: value?.[0],
-            })
-         }
-      });
-    } else if (result?.success && result.companyId) {
+  const handleSelectPlan = async () => {
+    if (!selectedPlanId) {
       toast({
-        title: "Account Created!",
-        description: "Next, please select your plan.",
-      })
-      router.push(`/signup/plan?companyId=${result.companyId}`)
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a plan to continue.",
+      });
+      return;
     }
-  }
+
+    setIsSubmitting(true);
+    // Redirect to the next step of the signup process
+    router.push(`/signup/register?planId=${selectedPlanId}`);
+    setIsSubmitting(false);
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <Card className="w-full max-w-md">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl">Create an Account</CardTitle>
-              <CardDescription>
-                Get started with TriageAI by creating your company account.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <FormField
-                control={form.control}
-                name="companyName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Company Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Acme Inc." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Your Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="you@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold tracking-tight">Choose Your Plan</h1>
+          <p className="mt-2 text-lg text-muted-foreground">Select the plan that best fits your team's needs.</p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-3">
+          {plans.map((plan) => (
+            <Card
+              key={plan.id}
+              className={cn(
+                "flex flex-col cursor-pointer transition-all",
+                selectedPlanId === plan.id ? "border-primary ring-2 ring-primary" : "border-border",
+                plan.recommended && "border-primary"
+              )}
+              onClick={() => setSelectedPlanId(plan.id)}
+            >
+              {plan.recommended && (
+                <div className="py-1 px-4 bg-primary text-primary-foreground text-center text-sm font-semibold rounded-t-lg">
+                  Recommended
+                </div>
+              )}
+              <CardHeader>
+                <CardTitle>{plan.name}</CardTitle>
+                <CardDescription>{plan.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow space-y-6">
+                <div>
+                  <span className="text-4xl font-bold">{plan.price}</span>
+                  <span className="text-muted-foreground">{plan.period}</span>
+                </div>
+                <ul className="space-y-2">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-primary" />
+                      <span className="text-sm">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                 <Button 
+                    className="w-full"
+                    variant={selectedPlanId === plan.id ? 'default' : 'outline'}
+                 >
+                    {selectedPlanId === plan.id ? 'Selected' : 'Select Plan'}
+                 </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+
+        <div className="mt-8 flex justify-center">
+            <Button size="lg" onClick={handleSelectPlan} disabled={!selectedPlanId || isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Account
-              </Button>
-              <p className="text-xs text-center text-muted-foreground">
-                Already have an account?{" "}
-                <Link href="/login" className="underline hover:text-primary">
-                  Log in
-                </Link>
-              </p>
-            </CardFooter>
-          </form>
-        </Form>
-      </Card>
+                Continue
+            </Button>
+        </div>
+      </div>
     </div>
-  )
+  );
 }
