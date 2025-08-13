@@ -8,6 +8,7 @@ async function main() {
     {
       id: 'plan-starter',
       name: 'Starter',
+      description: 'For small teams getting started.',
       price: 49,
       period: '/month',
       tasks: 500,
@@ -16,6 +17,7 @@ async function main() {
     {
       id: 'plan-pro',
       name: 'Pro',
+      description: 'For growing teams that need more power.',
       price: 199,
       period: '/month',
       tasks: 5000,
@@ -24,6 +26,7 @@ async function main() {
     {
       id: 'plan-enterprise',
       name: 'Enterprise',
+      description: 'For large organizations with specific needs.',
       price: null, // Custom pricing
       period: 'Contact us',
       tasks: -1, // Unlimited
