@@ -32,9 +32,11 @@ export default function LoginPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full">Log In</Button>
+          <Button className="w-full" asChild>
+            <Link href="/dashboard">Log In</Link>
+          </Button>
            <p className="text-xs text-center text-muted-foreground">
-            Are you an agent? <Link href="/dashboard" className="underline hover:text-primary">Agent Dashboard</Link>
+            Don&apos;t have an account? <Link href="/signup" className="underline hover:text-primary">Sign up</Link>
           </p>
         </CardFooter>
       </Card>

@@ -37,11 +37,8 @@ export async function createTicketAction(formData: FormData) {
     })
     console.log("Routing Decision:", routingDecision)
 
-    // For now, we'll assign to a default company. In a real multi-tenant app,
-    // this would come from the authenticated user's session.
     const companyId = "comp-acme"
 
-    // Find agent and team from the database
     const assignedTo = await prisma.user.findFirst({ where: { name: routingDecision.assignedAgent, companyId: companyId } });
     const assignedTeam = await prisma.team.findFirst({ where: { name: routingDecision.assignedTeam, companyId: companyId } });
 
@@ -54,7 +51,7 @@ export async function createTicketAction(formData: FormData) {
             company: { connect: { id: companyId } },
             category: intentAnalysis.category,
             urgency: intentAnalysis.urgency,
-            status: "open", // Initial status
+            status: "open",
             assignedTo: assignedTo ? { connect: { id: assignedTo.id } } : undefined,
             team: assignedTeam ? { connect: { id: assignedTeam.id } } : undefined,
             logs: {
@@ -117,5 +114,81 @@ export async function suggestReplyAction(ticketContent: string) {
     } catch (error) {
         console.error("Failed to suggest reply:", error);
         return { error: "Could not generate a suggested reply." }
+    }
+}
+
+const signupSchema = z.object({
+  companyName: z.string().min(1, "Company name is required."),
+  name: z.string().min(1, "Your name is required."),
+  email: z.string().email("Invalid email address."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
+})
+
+export async function signupAction(data: z.infer<typeof signupSchema>) {
+    const validation = signupSchema.safeParse(data);
+    if (!validation.success) {
+        return { errors: validation.error.flatten().fieldErrors };
+    }
+    
+    // In a real app, you would hash the password here. e.g., using bcrypt
+    // const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    try {
+        const company = await prisma.company.create({
+            data: {
+                name: data.companyName,
+                // The plan will be connected in the next step
+            }
+        });
+
+        await prisma.user.create({
+            data: {
+                name: data.name,
+                email: data.email,
+                // password: hashedPassword,
+                password: data.password, // Storing plaintext for simplicity
+                company: { connect: { id: company.id } },
+            }
+        });
+        
+        return { success: true, companyId: company.id };
+
+    } catch (error: any) {
+        console.error("Signup failed:", error);
+        // Check for unique constraint violation for email
+        if (error?.code === 'P2002' && error?.meta?.target?.includes('email')) {
+             return { errors: { email: ["An account with this email already exists."] } };
+        }
+        return { errors: { _form: ["An unexpected error occurred. Please try again."] } };
+    }
+}
+
+
+const selectPlanSchema = z.object({
+  companyId: z.string(),
+  planId: z.string(),
+})
+
+export async function selectPlanAction(data: z.infer<typeof selectPlanSchema>) {
+    const validation = selectPlanSchema.safeParse(data);
+    if (!validation.success) {
+        return { error: "Invalid input." };
+    }
+
+    try {
+        const { companyId, planId } = validation.data;
+        await prisma.company.update({
+            where: { id: companyId },
+            data: {
+                plan: { connect: { id: planId } }
+            }
+        });
+        
+        revalidatePath("/dashboard/analytics");
+
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to select plan:", error);
+        return { error: "Could not update the plan for the company." };
     }
 }
