@@ -4,13 +4,13 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatRelativeTime } from "@/lib/utils"
-import { Bot, User, System, BadgeInfo, Workflow, ShieldAlert, CircleCheck, CircleX } from "lucide-react"
+import { Bot, User, Computer, BadgeInfo, Workflow, ShieldAlert, CircleCheck, CircleX } from "lucide-react"
 
 const iconMap: Record<string, React.ComponentType<any>> = {
     user: User,
     customer: User,
     ai: Bot,
-    system: System,
+    system: Computer,
     ticket_created_start: Workflow,
     ai_analysis_complete: BadgeInfo,
     ticket_creation_failed: ShieldAlert,
