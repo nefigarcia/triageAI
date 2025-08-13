@@ -9,6 +9,7 @@ async function main() {
       id: 'plan-starter',
       name: 'Starter',
       price: 49,
+      period: '/month',
       tasks: 500,
       agents: 1,
     },
@@ -16,6 +17,7 @@ async function main() {
       id: 'plan-pro',
       name: 'Pro',
       price: 199,
+      period: '/month',
       tasks: 5000,
       agents: 5,
     },
@@ -23,6 +25,7 @@ async function main() {
       id: 'plan-enterprise',
       name: 'Enterprise',
       price: null, // Custom pricing
+      period: 'Contact us',
       tasks: -1, // Unlimited
       agents: -1, // Unlimited
     },
