@@ -1,58 +1,59 @@
-generator client {
-  provider = "prisma-client-js"
-}
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model Plan {
-  id     String @id @default(cuid())
-  name   String
-  tasks  Int
-  agents Int
-  price  Float
-
-  companies Company[]
+generator client {
+  provider = "prisma-client-js"
 }
 
 model Company {
-  id     String @id @default(cuid())
-  name   String
-  planId String
-  plan   Plan   @relation(fields: [planId], references: [id])
-
+  id      String   @id @default(cuid())
+  name    String
+  plan    Plan     @relation(fields: [planId], references: [id])
+  planId  String
   users   User[]
-  teams   Team[]
   tickets Ticket[]
+  teams   Team[]
+}
+
+model Plan {
+  id          String    @id
+  name        String
+  price       String
+  period      String
+  tasks       Int
+  agents      Int
+  features    String
+  companies   Company[]
 }
 
 model User {
-  id        String  @id @default(cuid())
-  email     String  @unique
+  id        String   @id @default(cuid())
   name      String
+  email     String   @unique
+  password  String
   avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  companyId String
   company   Company @relation(fields: [companyId], references: [id])
+  companyId String
 
-  teamId String?
-  team   Team?   @relation(fields: [teamId], references: [id])
-
-  assignedTickets Ticket[] @relation("AssignedTickets")
+  tickets Ticket[]
 }
 
 model Team {
-  id   String @id @default(cuid())
-  name String
-
-  companyId String
+  id      String @id @default(cuid())
+  name    String
+  
   company   Company @relation(fields: [companyId], references: [id])
+  companyId String
 
-  members User[]
   tickets Ticket[]
 }
+
 
 model Ticket {
   id            String   @id @default(cuid())
@@ -61,30 +62,32 @@ model Ticket {
   customerName  String
   customerEmail String
   status        String
+  priority      String   @default("medium")
   urgency       String
   category      String
   createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id])
 
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  assignedToId  String?
+  assignedTo    User?    @relation(fields: [assignedToId], references: [id])
 
-  assignedToId String?
-  assignedTo   User?   @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  teamId        String?
+  team          Team?    @relation(fields: [teamId], references: [id])
 
-  teamId String?
-  team   Team?   @relation(fields: [teamId], references: [id])
-
-  logs TicketLog[]
+  logs          TicketLog[]
 }
 
 model TicketLog {
   id        String   @id @default(cuid())
   timestamp DateTime
-  actor     String // e.g., 'User', 'AI'
-  actorName String
+  actor     String // "AI" or "User"
+  actorName String // "TriageAI" or User's name
   action    String
   details   String   @db.Text
-
-  ticketId String
-  ticket   Ticket @relation(fields: [ticketId], references: [id])
+  
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
 }

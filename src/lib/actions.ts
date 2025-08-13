@@ -145,7 +145,6 @@ export async function signupAction(data: z.infer<typeof signupSchema>) {
                         {
                             name: data.name,
                             email: data.email,
-                            // password: hashedPassword,
                             password: data.password, // Storing plaintext for simplicity
                         }
                     ]
@@ -153,6 +152,7 @@ export async function signupAction(data: z.infer<typeof signupSchema>) {
             }
         });
         
+        revalidatePath("/dashboard/analytics");
         return { success: true, companyId: company.id };
 
     } catch (error: any) {
@@ -162,35 +162,5 @@ export async function signupAction(data: z.infer<typeof signupSchema>) {
              return { errors: { email: ["An account with this email already exists."] } };
         }
         return { errors: { _form: ["An unexpected error occurred. Please try again."] } };
-    }
-}
-
-
-const selectPlanSchema = z.object({
-  companyId: z.string(),
-  planId: z.string(),
-})
-
-export async function selectPlanAction(data: z.infer<typeof selectPlanSchema>) {
-    const validation = selectPlanSchema.safeParse(data);
-    if (!validation.success) {
-        return { error: "Invalid input." };
-    }
-
-    try {
-        const { companyId, planId } = validation.data;
-        await prisma.company.update({
-            where: { id: companyId },
-            data: {
-                plan: { connect: { id: planId } }
-            }
-        });
-        
-        revalidatePath("/dashboard/analytics");
-
-        return { success: true };
-    } catch (error) {
-        console.error("Failed to select plan:", error);
-        return { error: "Could not update the plan for the company." };
     }
 }
