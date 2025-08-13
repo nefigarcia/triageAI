@@ -3,7 +3,6 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { AnimatedScene } from '@/components/animated-scene';
 import { Check } from 'lucide-react';
 
 const features = [
@@ -51,8 +50,13 @@ export default function Home() {
             </div>
         </div>
         
-        <div className="w-full h-80 lg:w-1/2 lg:h-screen mt-10 lg:mt-0">
-            <AnimatedScene />
+        <div className="w-full lg:w-1/2 mt-10 lg:mt-0 flex items-center justify-center p-8">
+            <div 
+              className="w-[400px] h-[400px] bg-gradient-to-br from-blue-400/20 to-orange-400/20 rounded-full animate-[spin_20s_linear_infinite]"
+              data-ai-hint="abstract geometric background"
+            >
+              <div className="w-full h-full bg-gradient-to-tr from-blue-400/30 to-orange-400/30 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
+            </div>
         </div>
 
       </div>
