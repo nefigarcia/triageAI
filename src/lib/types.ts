@@ -1,14 +1,35 @@
+export type Plan = {
+  id: 'starter' | 'pro' | 'enterprise';
+  name: string;
+  price: number;
+  tasks: number | 'unlimited';
+  agents: number;
+};
+
+export type Company = {
+  id: string;
+  name: string;
+  plan: Plan;
+  usage: {
+    tasks: number;
+    agents: number;
+  };
+};
+
 export type User = {
   id: string;
   name: string;
   email: string;
   avatarUrl: string;
   teamId: string;
+  companyId: string;
+  role: 'agent' | 'admin';
 };
 
 export type Team = {
   id: string;
   name: string;
+  companyId: string;
 };
 
 export type TicketLog = {
@@ -33,4 +54,5 @@ export type Ticket = {
   team?: Team;
   createdAt: string;
   logs: TicketLog[];
+  companyId: string;
 };

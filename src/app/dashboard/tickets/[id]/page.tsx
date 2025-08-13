@@ -6,7 +6,7 @@ import { tickets, users, teams } from "@/lib/data"
 import { Separator } from "@/components/ui/separator"
 import { TicketDetailsCard } from "@/components/dashboard/ticket-details-card"
 import { TicketLogs } from "@/components/dashboard/ticket-logs"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SuggestReply } from "@/components/dashboard/suggest-reply"
 
 export default function TicketDetailPage({ params }: { params: { id: string } }) {
@@ -15,6 +15,9 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
   if (!ticket) {
     notFound()
   }
+  
+  const companyUsers = users.filter(u => u.companyId === ticket.companyId);
+  const companyTeams = teams.filter(t => t.companyId === ticket.companyId);
 
   const ticketContentForReply = `Customer: ${ticket.customerName} (${ticket.customerEmail})\nSubject: ${ticket.subject}\n\n${ticket.description}`
 
@@ -52,7 +55,7 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-          <TicketDetailsCard ticket={ticket} users={users} teams={teams} />
+          <TicketDetailsCard ticket={ticket} users={companyUsers} teams={companyTeams} />
           <TicketLogs logs={ticket.logs} />
         </div>
       </div>
