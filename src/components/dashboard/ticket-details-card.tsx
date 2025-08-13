@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Ticket, User, Team } from "@/lib/types"
@@ -18,6 +19,8 @@ interface TicketDetailsCardProps {
 }
 
 export function TicketDetailsCard({ ticket, users, teams }: TicketDetailsCardProps) {
+  const allCategories = [...new Set(["Technical", "Billing", "Sales", "General", ticket.category])];
+
   return (
     <Card>
       <CardHeader>
@@ -58,12 +61,7 @@ export function TicketDetailsCard({ ticket, users, teams }: TicketDetailsCardPro
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Technical">Technical</SelectItem>
-              <SelectItem value="Billing">Billing</SelectItem>
-              <SelectItem value="Sales">Sales</SelectItem>
-              <SelectItem value="General">General</SelectItem>
-              {/* This ensures that if a category is not in the list, it is still selectable */}
-              {[...new Set(["Technical", "Billing", "Sales", "General", ticket.category])].map(category => (
+              {allCategories.map(category => (
                   <SelectItem key={category} value={category}>{category}</SelectItem>
               ))}
             </SelectContent>
@@ -71,12 +69,12 @@ export function TicketDetailsCard({ ticket, users, teams }: TicketDetailsCardPro
         </div>
         <div className="grid gap-2">
           <Label htmlFor="agent">Assigned Agent</Label>
-          <Select defaultValue={ticket.assignedTo?.id}>
+          <Select defaultValue={ticket.assignedTo?.id ?? "unassigned"}>
             <SelectTrigger id="agent">
               <SelectValue placeholder="Select agent" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Unassigned</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
               {users.map((user) => (
                 <SelectItem key={user.id} value={user.id}>
                   {user.name}
@@ -87,12 +85,12 @@ export function TicketDetailsCard({ ticket, users, teams }: TicketDetailsCardPro
         </div>
         <div className="grid gap-2">
           <Label htmlFor="team">Assigned Team</Label>
-          <Select defaultValue={ticket.team?.id}>
+          <Select defaultValue={ticket.team?.id ?? "unassigned"}>
             <SelectTrigger id="team">
               <SelectValue placeholder="Select team" />
             </SelectTrigger>
             <SelectContent>
-               <SelectItem value="">Unassigned</SelectItem>
+               <SelectItem value="unassigned">Unassigned</SelectItem>
               {teams.map((team) => (
                 <SelectItem key={team.id} value={team.id}>
                   {team.name}
