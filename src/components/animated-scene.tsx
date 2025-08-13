@@ -1,11 +1,11 @@
 "use client"
 
 import { Canvas, useFrame } from "@react-three/fiber"
-import { useRef } from "react"
+import { useRef, useState, useEffect } from "react"
 import type { Mesh } from "three"
 import { OrbitControls, Sphere, Torus } from "@react-three/drei"
 
-export function AnimatedScene() {
+function Scene() {
   const torusRef = useRef<Mesh>(null!)
   const sphereRef = useRef<Mesh>(null!)
 
@@ -32,4 +32,15 @@ export function AnimatedScene() {
         <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.5} />
     </Canvas>
   )
+}
+
+
+export function AnimatedScene() {
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  return isClient ? <Scene /> : null
 }
