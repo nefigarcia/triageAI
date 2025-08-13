@@ -29,7 +29,7 @@ export function UserNav() {
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">Support Agent</p>
             <p className="text-xs leading-none text-muted-foreground">
-              agent@triageflow.com
+              agent@triageai.com
             </p>
           </div>
         </DropdownMenuLabel>

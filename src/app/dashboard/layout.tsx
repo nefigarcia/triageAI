@@ -27,7 +27,7 @@ export default function DashboardLayout({
               <Ticket className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
-              TriageFlow
+              TriageAI
             </h1>
           </div>
         </SidebarHeader>

@@ -91,7 +91,7 @@ export default function SignupPage() {
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl">Create an Account</CardTitle>
               <CardDescription>
-                Get started with TriageFlow by creating your company account.
+                Get started with TriageAI by creating your company account.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">

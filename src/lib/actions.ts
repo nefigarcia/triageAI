@@ -60,21 +60,21 @@ export async function createTicketAction(formData: FormData) {
                     {
                         timestamp: new Date(),
                         actor: 'AI',
-                        actorName: 'TriageFlow AI',
+                        actorName: 'TriageAI',
                         action: 'Ticket Created',
                         details: 'Received from web form.'
                     },
                     {
                         timestamp: new Date(),
                         actor: 'AI',
-                        actorName: 'TriageFlow AI',
+                        actorName: 'TriageAI',
                         action: 'Intent Analysis',
                         details: `Intent: ${intentAnalysis.intent}, Urgency: ${intentAnalysis.urgency}, Category: ${intentAnalysis.category}`
                     },
                     {
                         timestamp: new Date(),
                         actor: 'AI',
-                        actorName: 'TriageFlow AI',
+                        actorName: 'TriageAI',
                         action: 'Route Ticket',
                         details: `Assigned to ${routingDecision.assignedAgent} in team ${routingDecision.assignedTeam}. Urgency: ${routingDecision.urgencyLevel}. Escalation: ${routingDecision.shouldEscalate}`
                     }
