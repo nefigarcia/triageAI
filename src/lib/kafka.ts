@@ -1,16 +1,16 @@
 import { Kafka } from 'kafkajs';
 
-const brokers = process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : [];
+const brokers = process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : ['localhost:9092'];
 
 // We only initialize Kafka if the brokers are configured.
 // This allows the app to run without Kafka for local development if needed.
-const kafka = brokers.length > 0 ? new Kafka({
+export const kafka = brokers.length > 0 ? new Kafka({
   clientId: 'triage-ai',
   brokers: brokers,
 }) : null;
 
 export const producer = kafka ? kafka.producer() : null;
-export const consumer = kafka ? kafka.consumer({ groupId: 'triage-ai-monitoring' }) : null;
+// We remove the shared consumer. A new one will be created per request.
 
 let isProducerConnected = false;
 
