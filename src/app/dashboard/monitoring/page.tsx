@@ -27,7 +27,7 @@ export default function MonitoringPage() {
     eventSource.onmessage = (event) => {
         try {
             const newEvent = JSON.parse(event.data);
-            setEvents(prevEvents => [newEvent, ...prevEvents]);
+            setEvents(prevEvents => [...prevEvents, newEvent]);
         } catch (error) {
             console.error("Failed to parse event data:", error);
         }
@@ -67,7 +67,7 @@ export default function MonitoringPage() {
       <Card>
         <CardHeader>
           <CardTitle>Event Stream</CardTitle>
-          <CardDescription>New events will appear at the top automatically.</CardDescription>
+          <CardDescription>New events will appear at the bottom automatically.</CardDescription>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[60vh] border rounded-md">
