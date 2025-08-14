@@ -11,16 +11,36 @@ export async function GET(request: Request) {
         return new Response('Kafka is not configured.', { status: 500 });
     }
     
-    // Create a new consumer for each request
+    // Create a new consumer for each request to ensure isolation.
     const consumer = kafka.consumer({ groupId: `triage-ai-monitoring-${Date.now()}` });
     let consumerConnected = false;
 
     const stream = new ReadableStream({
         async start(controller) {
+            const handleDisconnect = async () => {
+                if (consumerConnected) {
+                    try {
+                        await consumer.disconnect();
+                        console.log("Kafka consumer disconnected successfully.");
+                    } catch (disconnectError) {
+                        console.error("Error disconnecting Kafka consumer:", disconnectError);
+                    }
+                }
+                if (!controller.desiredSize) {
+                    controller.close();
+                }
+            };
+            
+            request.signal.onabort = () => {
+                console.log("Client disconnected, stopping Kafka consumer.");
+                handleDisconnect();
+            };
+
             try {
                 await consumer.connect();
                 consumerConnected = true;
-                await consumer.subscribe({ topic: AUDIT_TOPIC, fromBeginning: false });
+                // Set fromBeginning to true to see past events when you first connect.
+                await consumer.subscribe({ topic: AUDIT_TOPIC, fromBeginning: true });
                 console.log(`Kafka Consumer subscribed to topic "${AUDIT_TOPIC}"`);
                 
                 consumer.run({
@@ -36,24 +56,12 @@ export async function GET(request: Request) {
             } catch (error) {
                 console.error("Error in Kafka consumer stream:", error);
                 controller.error(error);
+                handleDisconnect();
             }
-
-            // Handle client disconnection
-            request.signal.onabort = async () => {
-                console.log("Client disconnected, stopping Kafka consumer.");
-                if (consumerConnected) {
-                    try {
-                        await consumer.disconnect();
-                    } catch (disconnectError) {
-                        console.error("Error disconnecting Kafka consumer:", disconnectError);
-                    }
-                }
-                controller.close();
-            };
         },
-        async cancel() {
-            console.log("Stream cancelled by client.");
-             if (consumerConnected) {
+        async cancel(reason) {
+            console.log("Stream cancelled by client.", reason);
+            if (consumerConnected) {
                 try {
                     await consumer.disconnect();
                 } catch (disconnectError) {
