@@ -73,7 +73,7 @@ export default function Home() {
                         alt="App screenshot"
                         width={2432}
                         height={1442}
-                        data-ai-hint="application dashboard screenshot"
+                        data-ai-hint="application dashboard"
                         className="rounded-md shadow-2xl ring-1 ring-gray-900/10"
                       />
                     </div>
