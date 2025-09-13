@@ -192,3 +192,28 @@ export async function signupAction(data: z.infer<typeof signupSchema>) {
         return { errors: { _form: ["An unexpected error occurred. Please try again."] } };
     }
 }
+
+
+const selectPlanSchema = z.object({
+  companyId: z.string(),
+  planId: z.string(),
+});
+
+export async function selectPlanAction(data: z.infer<typeof selectPlanSchema>) {
+  const validation = selectPlanSchema.safeParse(data);
+  if (!validation.success) {
+    return { error: "Invalid input." };
+  }
+
+  try {
+    await prisma.company.update({
+      where: { id: data.companyId },
+      data: { planId: data.planId },
+    });
+    revalidatePath("/dashboard/analytics");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update plan:", error);
+    return { error: "Could not update the plan. Please try again." };
+  }
+}
